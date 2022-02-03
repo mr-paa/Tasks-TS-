@@ -76,86 +76,48 @@ interface IMothList {
 function getMonthsList(book:NameDateObj[]): IMothList[] {
     
     let itogList: IMothList[] = [];
-
     if (!Array.isArray(book)) {
         console.log(itogList);
         return itogList;
 
     } else {
+        
+        let arrBook: NameDateObj[] = getNextBirthdays(book, '01.01.2022');
+        arrBook.forEach(elem => {
+            let splitSentDate: string[] = String(elem.birthday).split(".");
+            let sentDate: Date = new Date(2022, Number(splitSentDate[1]) - 1, Number(splitSentDate[0]));
+            elem.birthday = sentDate;
+        });  
 
-        let months: IMothList[] = [];
-        let janList: IMothList = {month:'Январь', friends: []};
-        let febList: IMothList = {month:'Февраль', friends: []};
-        let marList: IMothList = {month:'Март', friends: []};
-        let aprList: IMothList = {month:'Апрель', friends: []};
-        let mayList: IMothList = {month:'Май', friends: []};
-        let junList: IMothList = {month:'Июнь', friends: []};
-        let julList: IMothList = {month:'Июль', friends: []};
-        let augList: IMothList = {month:'Август', friends: []};
-        let sepList: IMothList = {month:'Сентябрь', friends: []};
-        let octList: IMothList = {month:'Октябрь', friends: []};
-        let novList: IMothList = {month:'Ноябрь', friends: []};
-        let decList: IMothList = {month:'Декабрь', friends: []};
+        const months = ['Январь', 'Февраль', 'Март', 'Апрель',
+                        'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
-        let nextDayBirthday: NameDateObj[] = getNextBirthdays(book, '01.01.2022');
-       
-
-        nextDayBirthday.forEach(elem => {
-
-            if (String(elem.birthday).slice(3, 5) === '01') {
-                janList.friends.push(elem);
+        let mapList = arrBook.reduce((acc, cur) => {
+            if (months[new Date(cur.birthday).getMonth()]) {
+                let name: string = months[new Date(cur.birthday).getMonth()];    
+                if (acc.get(name) !== undefined) {
+                    let arrCur = acc.get(name)
+                    arrCur.push(cur)
+                    acc.set(name, arrCur)
+                }
+                else {
+                    acc.set(name, [cur]);
+                }                
             }
-            if (String(elem.birthday).slice(3, 5) === '02') {
-                febList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '03') {
-                marList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '04') {
-                aprList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '05') {
-                mayList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '06') {
-                junList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '07') {
-                julList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '08') {
-                augList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '09') {
-                sepList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '10') {
-                octList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '11') {
-                novList.friends.push(elem);
-            }
-            if (String(elem.birthday).slice(3, 5) === '12') {
-                decList.friends.push(elem);
-            }
-
-        });
-
-        months.push(janList, febList, marList,
-            aprList, mayList, junList,
-            julList, augList, sepList,
-            octList, novList, decList);
-
-        months.forEach(el => {
-           if(el.friends.length > 0) {
-                itogList.push(el)
-           }
-        });
-
+            return acc 
+            
+        }, new Map<string, NameDateObj[]>());
+        
+        for (let [keys, values] of mapList) {
+            values.forEach(el => {
+                el.birthday = new Date(el.birthday).toLocaleDateString()
+            });
+            let a = {month: keys, friends: values };
+            itogList.push(a)
+        }
         console.log(itogList);
         return itogList;
     }
-
 }
 
 getMonthsList(telbook);
@@ -261,5 +223,3 @@ function getMinimumPresentsPrice( phoneList:IPresentsList[] ): IitogPriceArr | [
 }
 
 getMinimumPresentsPrice(phoneList);
-
-

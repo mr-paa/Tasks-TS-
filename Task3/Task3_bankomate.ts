@@ -117,141 +117,74 @@ function createBankomat(BankNotesRepository: INotesRepos, bank: IBank): IBankoma
         },
 
         removeClient: () => {
-            activClient = undefined;
-            console.log(true);
-            return true;          
+            if (activClient === undefined) {
+                console.log(false);
+                return false
+            }
+            if (activClient !== undefined) {
+                console.log(true);
+                return true;          
+            }
         },
 
         addMoney: (... denomination: INotesRepos[] ) => {
             
             let addSumClient: number = 0;
-            denomination.forEach(elem => {
-                if (elem[5000] !== undefined) {
-                    BankNotesRepository[5000] += elem[5000];
-                    addSumClient += elem[5000] * 5000;
-                }
-                if (elem[2000] !== undefined) {
-                    BankNotesRepository[2000] +=elem[2000];
-                    addSumClient += elem[2000] * 2000;
-                }
-                if (elem[1000] !== undefined) {
-                    BankNotesRepository[1000] +=elem[1000];
-                    addSumClient += elem[1000] * 1000;
-                }
-                if (elem[500] !== undefined) {
-                    BankNotesRepository[500] +=elem[500];
-                    addSumClient += elem[500] * 500;
-                }
-                if (elem[200] !== undefined) {
-                    BankNotesRepository[200] +=elem[200];
-                    addSumClient += elem[200] * 200;
-                }
-                if (elem[100] !== undefined) {
-                    BankNotesRepository[100] +=elem[100];
-                    addSumClient += elem[100] * 100;
-                }
-                if (elem[50] !== undefined) {
-                    BankNotesRepository[50] +=elem[50];
-                    addSumClient += elem[50] * 50;
-                }
-                if (elem[10] !== undefined) {
-                    BankNotesRepository[10] +=elem[10];
-                    addSumClient += elem[10] * 10;
-                }
-            });
-            
-            activClient.balance += addSumClient;
-        
+
+            if (activClient !== undefined) {
+                denomination.forEach(el1 => {
+                    for (let key in el1) {
+                        BankNotesRepository[Number(key)] += Number(el1[key]);
+                        addSumClient += Number(el1[key]) * Number(key);
+                    } 
+                });
+                activClient.balance += addSumClient;
+                console.log('Произошло пополнение на сумму:', addSumClient , '\n' + 'Теперь ваш баланс:', activClient.balance);
+
+            } else {
+                throw new Error('Клиент в данный момент не работает с банкоматом')
+            }  
         },
 
         giveMoney: (money: number) => {
             
-            if (activClient.balance < money) {
-                throw new Error('На вашем счету недостаточно средств.');
-            }
-            
-            if (money % 10 !==0) {
-                throw new Error('Сумма выдачи должна быть кратна 10.');
-            }
-            
-            let objMoney: INotesRepos = {};
-            let giveMoney = money;
-            if (activClient.balance >= money && (money % 10 === 0)) {
-                let sum5000 = 0;
-                let sum2000 = 0;
-                let sum1000 = 0;
-                let sum500 = 0;
-                let sum200 = 0;
-                let sum100 = 0;
-                let sum50 = 0;
-                let sum10 = 0;
-                while (giveMoney >= 9) {
-                    if (giveMoney >= 5000 && BankNotesRepository[5000] !== 0) {
-                        giveMoney -= 5000;
-                        BankNotesRepository[5000] -= 1;
-                        sum5000++
-                        objMoney['5000'] = sum5000;
-                        continue
-                    }
-                    if (giveMoney >= 2000 && BankNotesRepository[2000] !== 0) {
-                        giveMoney -= 2000;
-                        BankNotesRepository[2000] -= 1;
-                        sum2000++
-                        objMoney['2000'] = sum2000;
-                        continue
-                    }
-                    if (giveMoney >= 1000 && BankNotesRepository[1000] !== 0) {
-                        giveMoney -= 1000;
-                        BankNotesRepository[1000] -= 1;
-                        sum1000++
-                        objMoney['1000'] = sum1000;
-                        continue
-                    }
-                    if (giveMoney >= 500 && BankNotesRepository[500] !== 0) {
-                        giveMoney -= 500;
-                        BankNotesRepository[500] -= 1;
-                        sum500++
-                        objMoney['500'] = sum500;
-                        continue
-                    }
-                    if (giveMoney >= 200 && BankNotesRepository[200] !== 0) {
-                        giveMoney -= 200;
-                        BankNotesRepository[200] -= 1;
-                        sum200++
-                        objMoney['200'] = sum200;
-                        continue
-                    }
-                    if (giveMoney >= 100 && BankNotesRepository[100] !== 0) {
-                        giveMoney -= 100;
-                        BankNotesRepository[100] -= 1;
-                        sum100++
-                        objMoney['100'] = sum100;
-                        continue
-                    }
-                    if (giveMoney >= 50 && BankNotesRepository[50] !== 0) {
-                        giveMoney -= 50;
-                        BankNotesRepository[50] -= 1;
-                        sum50++
-                        objMoney['50'] = sum50;
-                        continue
-                    }
-                    if (giveMoney >=10 && BankNotesRepository[10] !== 0) {
-                        giveMoney -= 10;
-                        BankNotesRepository[10] -= 1;
-                        sum10++
-                        objMoney['10'] = sum10;
-                        continue
-                    }
-                    if (giveMoney > 0) {
-                        throw new Error('В банкомате недостаточно купюр')
+            if (activClient !== undefined) {
+                let count = 0;
+                
+                if (activClient.balance < money) {
+                    throw new Error('На вашем счету недостаточно средств.');
+                }
+                if (money % 10 !==0) {
+                    throw new Error('Сумма выдачи должна быть кратна 10.');
+                }
+
+                for (let key in BankNotesRepository) {
+                    count += BankNotesRepository[key] * Number(key);
+                }
+                if (money > count) {
+                    throw new Error('В банкомате недостаточно купюр')
+                }
+
+                let giveSumObj: INotesRepos = { 5000: 0, 2000: 0, 1000: 0, 500: 0,
+                    200: 0, 100: 0, 50: 0, 10: 0 };
+                let arrDen: number[] = [5000, 2000, 1000, 500, 200, 100, 50, 10];
+
+                for (let key = 0; key < arrDen.length; key++) {
+                    while (money >= arrDen[key]) {
+                        if ( Number(BankNotesRepository[arrDen[key]]) === 0 ) {
+                            break;
+                        } else {
+                            money -= arrDen[key];
+                            BankNotesRepository[arrDen[key]] -= 1;
+                            activClient.balance -= arrDen[key];
+                            giveSumObj[arrDen[key]] += 1;
+                        }
                     }
                 }
-            }
-
-            if (giveMoney === 0) {
-                activClient.balance -= money;
-                console.log(objMoney)
-                return objMoney
+                console.log('Выдано:', giveSumObj, '\n' + 'Теперь ваш баланс:', activClient.balance);
+                return giveSumObj
+            } else {
+                throw new Error('Клиент в данный момент не работает с банкоматом')
             }
         }
     }
